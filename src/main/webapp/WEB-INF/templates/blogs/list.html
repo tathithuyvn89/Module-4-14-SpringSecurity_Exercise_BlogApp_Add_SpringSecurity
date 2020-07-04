@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+<a href="/create-blog">Create new Blog</a>
+<h1>Customers</h1>
+<div>
+    <searchbody>
+        <form>
+            Search by name:
+            <input id="namesearch" name="s" type="text"/>
+            <input type="button" value="Search" onclick="search()"/>
+        </form>
+        <br/>
+    </searchbody>
+
+</div>
+<div>
+    <a th:href="@{bloglist/sortByDay}">Sap xep theo ngay</a>
+</div>
+<div>
+    <ul>
+        <th:block th:each="category: ${categories}">
+            <li>
+                <a th:href="@{/bloglist/__${category.getName()}__}">
+                    <span th:text="${category.name}"></span>
+                </a>
+            </li>
+        </th:block>
+    </ul>
+</div>
+<div>
+    <table>
+        <tr>
+            <td>Author</td>
+            <td>Title</td>
+            <td>context</td>
+            <td>PostDate</td>
+            <td>Category</td>
+            <td>Action</td>
+            <td>Vote</td>
+        </tr>
+
+        <th:block th:each="blog: ${blogs}">
+            <tr>
+                <td th:text="${blog.getAuthor()}"></td>
+                <td th:text="${blog.getName()}"></td>
+                <td th:text="${blog.getContent()}"></td>
+                <td th:text="${blog.getDate()}"></td>
+                <td th:text="${blog.getCategory().name}"></td>
+                <td th:text="${blog.getLikes()}"></td>
+                <td>
+                    <a th:href="@{/bloglist/__${blog.getId()}__/delete}">Delete</a>
+                    <a th:href="@{/bloglist/__${blog.getId()}__/edit}">Edit</a>
+                    <a th:href="@{/bloglist/{id}/view(id=${blog.getId()})}">View</a>
+
+                    <input type="hidden" id="blogId" th:value="${blog.id}"/>
+
+                    <button class="btn btn-primary" onclick="like($(this))" th:name="${blog.id}">
+                        Like <span th:text="${blog.likes}" th:id="${blog.id}" class="badge badge-light"></span>
+                    </button>
+                    <a class="btn btn-blog pull-right marginBottom10" href="/">BACK</a>
+                    <!--                        <a th:href="@{/bloglist/__${blog.getId()}__/like}"><input type="button" value="Like"></a>-->
+
+                </td>
+            </tr>
+        </th:block>
+    </table>
+</div>
+
+
+<!--    <div>-->
+<!--        <a th:href="@{'/bloglist'(page=${blogs.number - 1})}" th:if="${blogs.hasPrevious()}">Previous</a>-->
+<!--        <span th:text="${blogs.number + 1}"></span>/<span th:text="${blogs.totalPages}"></span>-->
+<!--        <a th:href="@{'/bloglist'(page=${blogs.number + 1})}" th:if="${blogs.hasNext()}">Next</a>-->
+<!--    </div>-->
+
+
+<script>
+    function like() {
+        // let id = document.getElementById("id").value;
+        let id =  $(this).attr("name");
+        $.ajax({
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            url: 'http://localhost:8080/api/blogs/likes/' + id,
+            type: 'PUT',
+            // data: JSON.stringify(id),
+            success: likeSuccessed,
+            error: likefailed
+        });
+    }
+    function likeSuccessed(response) {
+        console.log(response)
+        document.getElementById(response.id).innerHTML = response.likes;
+    }
+    function likefailed() {
+        alert("like fail");
+    }
+</script>
+</body>
+</html>
